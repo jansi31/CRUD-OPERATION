@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD OPERATION</title>
+    <!-- Load Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* --- General Body and Typography --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        /* --- Main Container --- */
+        .container {
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 2rem;
+        }
+
+        /* --- Controls Section --- */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            row-gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .controls {
+                flex-direction: row;
+                row-gap: 0;
+            }
+        }
+
+        .button-group {
+            display: flex;
+            column-gap: 1rem;
+        }
+
+        .button {
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+            color: #fff;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .undo-button {
+            background-color: #6b7280;
+        }
+        .undo-button:hover {
+            background-color: #4b5563;
+        }
+
+        .add-button {
+            background-color: #3b82f6;
+        }
+        .add-button:hover {
+            background-color: #2563eb;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            outline: none;
+        }
+
+        .search-input:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        @media (min-width: 640px) {
+            .search-input {
+                width: auto;
+            }
+        }
+
+        /* --- Table and Table Container --- */
+        .table-container {
+            background-color: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1-rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 2rem;
+            overflow-x: auto; /* Allow horizontal scrolling on small screens if needed */
+        }
+
+        .employee-table {
+            text-align: left;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        thead {
+            color: white;
+        }
+
+        th {
+            background-color: #2E86C1;
+            font-weight: 600;
+            padding: 0.75rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        th:first-child {
+            text-align: left;
+        }
+        
+        th:nth-child(2) {
+            text-align: left;
+        }
+
+        tbody {
+            color: #4b5563;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #d1d5db;
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f1f5f9;
+        }
+
+        .action-icons {
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .action-icons .icon-btn {
+            display: inline-block;
+        }
+
+        .icon-btn {
+            margin: 0 0.5rem;
+            cursor: pointer;
+        }
+        .icon-btn.edit {
+            color: #3b82f6;
+        }
+        .icon-btn.edit:hover {
+            color: #2563eb;
+        }
+        .icon-btn.delete {
+            color: #ef4444;
+        }
+        .icon-btn.delete:hover {
+            color: #dc2626;
+        }
+        .icon-btn.view {
+            color: #6b7280;
+        }
+        .icon-btn.view:hover {
+            color: #4b5563;
+        }
+        
+        /* --- Custom message box --- */
+        #messageBox {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #38a169;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 60;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* --- Popup Form --- */
+        .pop-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .pop-content {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .pop-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .pop-content .close-icon {
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+        .pop-content .close-icon:hover {
+            color: #ef4444;
+        }
+        
+        .form-fields {
+            display: flex;
+            flex-direction: column;
+            row-gap: 1rem;
+        }
+        
+        .form-fields input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            outline: none;
+        }
+        
+        .form-fields input:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        .save-button {
+            width: 100%;
+            background-color: #22c55e;
+            color: #fff;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .save-button:hover {
+            background-color: #16a34a;
+        }
+
+        /* --- Mobile Table Layout --- */
+        @media (max-width: 640px) {
+            .employee-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                white-space: nowrap;
+                clip: rect(0 0 0 0);
+            }
+        
+            .employee-table,
+            .employee-table tbody,
+            .employee-table tr,
+            .employee-table td {
+                display: block;
+            }
+        
+            .employee-table tr {
+                background-color: #fff;
+                border: 1px solid #ccc;
+                margin-bottom: 0.625em;
+                border-radius: 0.5rem;
+                padding: 1rem;
+            }
+        
+            .employee-table td {
+                text-align: right;
+                position: relative;
+                padding-left: 50%;
+                border-bottom: 1px solid #f3f4f6;
+            }
+        
+            .employee-table td:last-child {
+                border-bottom: 0;
+            }
+        
+            .employee-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0.75rem;
+                width: calc(50% - 1.5rem);
+                text-align: left;
+                font-weight: bold;
+            }
+            
+            /* Custom styling for the checkbox column in mobile view */
+            .employee-table td:first-child {
+                text-align: left;
+                padding-left: 0.75rem;
+            }
+            .employee-table td:first-child::before {
+                content: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>EMPLOYEE MANAGEMENT SYSTEM</h1>
+
+        <!-- Controls section -->
+        <div class="controls">
+            <div class="button-group">
+                <button onclick="undoDelete()" class="button undo-button">
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+                <button onclick="showForm()" class="button add-button">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+            <input type="text" id="searchInput" placeholder="Search by name..." onkeyup="searchEmployee()" class="search-input">
+        </div>
+
+        <!-- Table container -->
+        <div class="table-container">
+            <table id="employeeTable" class="employee-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllCheckboxes()"></th>
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Salary</th>
+                        <th class="action-icons">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Employee data will be rendered here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Custom message box to replace alert() -->
+    <div id="messageBox"></div>
+
+    <!-- The Popup Form -->
+    <div id="popform" class="pop-container">
+        <div class="pop-content">
+            <span onclick="closeForm()" class="close-icon"><i class="fas fa-times"></i></span>
+            <h3>Employee Details</h3>
+            <div class="form-fields">
+                <input type="number" id="sno" placeholder="S.No">
+                <input type="text" id="name" placeholder="Name">
+                <input type="number" id="age" placeholder="Age">
+                <input type="number" id="salary" placeholder="Salary">
+                <button onclick="saveData()" class="save-button">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let employees = [];
+        let editIndex = -1;
+        let undoStack = [];
+
+        // Function to show a custom message box instead of alert
+        function showMessage(message, type = 'success') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            if (type === 'error') {
+                messageBox.style.backgroundColor = '#ef4444';
+            } else if (type === 'info') {
+                messageBox.style.backgroundColor = '#6b7280';
+            } else {
+                messageBox.style.backgroundColor = '#38a169';
+            }
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000);
+        }
+
+        function showForm(index = -1) {
+            document.getElementById("popform").style.display = "flex";
+
+            if (index !== -1) {
+                editIndex = index;
+                const emp = employees[index];
+                document.getElementById("sno").value = emp.sno;
+                document.getElementById("name").value = emp.name;
+                document.getElementById("age").value = emp.age;
+                document.getElementById("salary").value = emp.salary;
+            } else {
+                editIndex = -1;
+                clearForm();
+            }
+        }
+
+        function closeForm() {
+            document.getElementById("popform").style.display = "none";
+        }
+
+        function clearForm() {
+            document.getElementById("sno").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("age").value = "";
+            document.getElementById("salary").value = "";
+        }
+
+        function saveData() {
+            const sno = document.getElementById("sno").value;
+            const name = document.getElementById("name").value;
+            const age = document.getElementById("age").value;
+            const salary = document.getElementById("salary").value;
+
+            if (sno && name && age && salary) {
+                const emp = { sno, name, age, salary };
+
+                if (editIndex === -1) {
+                    employees.push(emp);
+                    showMessage('Employee added successfully!');
+                } else {
+                    employees[editIndex] = emp;
+                    showMessage('Employee updated successfully!');
+                }
+
+                renderTable();
+                clearForm();
+                closeForm();
+            } else {
+                showMessage("Please fill all fields!", 'error');
+            }
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById("employeeTable").getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+            }
+
+            employees.forEach((emp, index) => {
+                const newRow = tableBody.insertRow();
+                newRow.innerHTML = `
+                    <td data-label="Select"><input type="checkbox" onchange="updateSelectAllCheckbox()"></td>
+                    <td data-label="S.No">${emp.sno}</td>
+                    <td data-label="Name">${emp.name}</td>
+                    <td data-label="Age">${emp.age}</td>
+                    <td data-label="Salary">${emp.salary}</td>
+                    <td data-label="Action" class="action-icons">
+                        <span class="icon-btn edit" onclick="showForm(${index})"><i class="fas fa-pencil-alt"></i></span>
+                        <span class="icon-btn delete" onclick="deleteEmployee(${index})"><i class="fas fa-trash-alt"></i></span>
+                        <span class="icon-btn view" onclick="viewEmployee(${index})"><i class="fas fa-eye"></i></span>
+                    </td>
+                `;
+            });
+        }
+        
+        function toggleAllCheckboxes() {
+            const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+            const checkboxes = document.querySelectorAll("#employeeTable tbody input[type='checkbox']");
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+        
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+            const checkboxes = document.querySelectorAll("#employeeTable tbody input[type='checkbox']");
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            selectAllCheckbox.checked = allChecked;
+        }
+
+        function deleteEmployee(index) {
+            undoStack.push(employees[index]);
+            employees.splice(index, 1);
+            renderTable();
+            showMessage('Employee deleted!', 'error');
+        }
+
+        function viewEmployee(index) {
+            const emp = employees[index];
+            const modalContent = `S.No: ${emp.sno}\nName: ${emp.name}\nAge: ${emp.age}\nSalary: ${emp.salary}`;
+            showMessage(modalContent, 'info');
+        }
+        
+        function undoDelete() {
+            if (undoStack.length > 0) {
+                const lastDeleted = undoStack.pop();
+                employees.push(lastDeleted);
+                renderTable();
+                showMessage('Undo successful!');
+            } else {
+                showMessage("Nothing to undo.", 'error');
+            }
+        }
+
+        function searchEmployee() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const tableBody = document.getElementById("employeeTable").getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            const filteredEmployees = employees.filter(emp => emp.name.toLowerCase().includes(input));
+
+            filteredEmployees.forEach((emp, index) => {
+                const originalIndex = employees.findIndex(e => e.sno === emp.sno);
+                const newRow = tableBody.insertRow();
+                newRow.innerHTML = `
+                    <td data-label="Select"><input type="checkbox" onchange="updateSelectAllCheckbox()"></td>
+                    <td data-label="S.No">${emp.sno}</td>
+                    <td data-label="Name">${emp.name}</td>
+                    <td data-label="Age">${emp.age}</td>
+                    <td data-label="Salary">${emp.salary}</td>
+                    <td data-label="Action" class="action-icons">
+                        <span class="icon-btn edit" onclick="showForm(${originalIndex})"><i class="fas fa-pencil-alt"></i></span>
+                        <span class="icon-btn delete" onclick="deleteEmployee(${originalIndex})"><i class="fas fa-trash-alt"></i></span>
+                        <span class="icon-btn view" onclick="viewEmployee(${originalIndex})"><i class="fas fa-eye"></i></span>
+                    </td>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
